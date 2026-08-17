@@ -73,7 +73,7 @@ export async function debugResourceQueries(testCourseId: string = "3") {
       console.error("❌ Error counting resources:", countError);
     } else {
       const counts: Record<number, number> = {};
-      countByCourse?.forEach((r: any) => {
+      countByCourse?.forEach((r: { course_id: number }) => {
         counts[r.course_id] = (counts[r.course_id] ?? 0) + 1;
       });
       console.log("✅ Resource counts by course:", counts);

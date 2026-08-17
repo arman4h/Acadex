@@ -28,7 +28,7 @@ export function Footer() {
               </Link>
             </div>
           </div>
-            <div>
+          <div>
             <h4 className="font-semibold text-sm text-[#1F2937] dark:text-slate-100 mb-3">Community</h4>
             <div className="flex flex-col gap-2">
               <Link to="/contribute" className="text-sm text-[#6B7280] dark:text-slate-400 hover:text-[#4F7CFF] transition-colors duration-150">

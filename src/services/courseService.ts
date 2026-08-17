@@ -48,7 +48,7 @@ export async function getAllCourses(): Promise<Course[]> {
   const { data, error } = await supabase!
     .from("course").select("*");
   if (error) throw error;
-  const courses = (data ?? []).map((c: any) => ({
+  const courses = (data ?? []).map((c: { id: number; trimester: number; course_code: string; course_name: string; description?: string }) => ({
     id: String(c.id), trimester: c.trimester,
     course_code: c.course_code, course_name: c.course_name, description: c.description,
   }));

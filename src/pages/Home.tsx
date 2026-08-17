@@ -38,6 +38,9 @@ export function Home() {
 
   const previewTrimesters = trimesters?.slice(0, 6) ?? [];
 
+  const [tashinImgFailed, setTashinImgFailed] = useState(false);
+  const [uiussImgFailed, setUiussImgFailed] = useState(false);
+
   return (
     <div>
       <SEO
@@ -360,16 +363,16 @@ export function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
           <div className="rounded-2xl border border-[#EAECEF] dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
             <div className="h-48 bg-[#EAECEF]/50 dark:bg-slate-800 flex items-center justify-center">
-              <img
-                src="https://avatars.githubusercontent.com/u/84122972?v=4"
-                alt="Md. Tashin Parvez"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement!.innerHTML =
-                    '<span class="text-[#6B7280] dark:text-slate-500 text-sm">Photo coming soon</span>';
-                }}
-              />
+              {tashinImgFailed ? (
+                <span className="text-[#6B7280] dark:text-slate-500 text-sm">Photo coming soon</span>
+              ) : (
+                <img
+                  src="https://avatars.githubusercontent.com/u/84122972?v=4"
+                  alt="Md. Tashin Parvez"
+                  className="w-full h-full object-cover"
+                  onError={() => setTashinImgFailed(true)}
+                />
+              )}
             </div>
             <div className="p-5">
               <h3 className="font-semibold text-[#1F2937] dark:text-slate-100">
@@ -397,16 +400,16 @@ export function Home() {
           </div>
           <div className="rounded-2xl border border-[#EAECEF] dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
             <div className="h-48 bg-[#EAECEF]/50 dark:bg-slate-800 flex items-center justify-center">
-              <img
-                src="https://i.ibb.co.com/dsCkRqn1/UIUSS.png"
-                alt="Team UIUSS"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement!.innerHTML =
-                    '<span class="text-[#6B7280] dark:text-slate-500 text-sm">Photo coming soon</span>';
-                }}
-              />
+              {uiussImgFailed ? (
+                <span className="text-[#6B7280] dark:text-slate-500 text-sm">Photo coming soon</span>
+              ) : (
+                <img
+                  src="https://i.ibb.co.com/dsCkRqn1/UIUSS.png"
+                  alt="Team UIUSS"
+                  className="w-full h-full object-cover"
+                  onError={() => setUiussImgFailed(true)}
+                />
+              )}
             </div>
             <div className="p-5">
               <h3 className="font-semibold text-[#1F2937] dark:text-slate-100">
