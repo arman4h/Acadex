@@ -1,4 +1,4 @@
-import { FolderGit, Heart, Award, ExternalLink } from "lucide-react";
+import { FolderGit, Heart, Award, ExternalLink, Code2, Mail, Globe } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
@@ -9,6 +9,7 @@ export function About() {
   const navigate = useNavigate();
   const [tashinImgFailed, setTashinImgFailed] = useState(false);
   const [uiussImgFailed, setUiussImgFailed] = useState(false);
+  const [creatorImgFailed, setCreatorImgFailed] = useState(false);
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <SEO
@@ -78,6 +79,77 @@ export function About() {
           >
             Contribute
           </Button>
+        </div>
+      </div>
+
+      <div className="mt-12">
+        <div className="flex items-center gap-2.5 mb-6">
+          <Code2 className="w-5 h-5 text-[#4F7CFF]" />
+          <h2 className="text-xl font-bold text-[#1F2937] dark:text-slate-100">
+            Acadex Creator
+          </h2>
+        </div>
+        <p className="text-sm text-[#6B7280] dark:text-slate-400 mb-6 leading-relaxed">
+          The person behind Acadex who built and maintains this platform.
+        </p>
+
+        <div className="rounded-2xl border border-[#EAECEF] dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="flex flex-col sm:flex-row">
+            <div className="sm:w-48 sm:h-48 w-full h-64 bg-[#EAECEF]/50 dark:bg-slate-800 shrink-0">
+              {creatorImgFailed ? (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-[#6B7280] dark:text-slate-500 text-sm">Photo coming soon</span>
+                </div>
+              ) : (
+                <img
+                  src="https://res.cloudinary.com/deaffxdrd/image/upload/v1793107970/Copy_dfdof_DSC09418.jpg_-_Arman_Hossain_bc7zg7_fc7fyk.webp"
+                  alt="Arman"
+                  className="w-full h-full object-cover object-top"
+                  onError={() => setCreatorImgFailed(true)}
+                />
+              )}
+            </div>
+            <div className="p-5 flex-1">
+              <h3 className="font-semibold text-[#1F2937] dark:text-slate-100">
+                Arman Hossain
+              </h3>
+              <p className="text-xs text-[#4F7CFF] font-medium mb-2">
+                Creator & Maintainer
+              </p>
+              <p className="text-sm text-[#6B7280] dark:text-slate-400 leading-relaxed mb-3">
+                Computer Science student at UIU . Enjoys building useful tools, solving everyday problems, and making things a little easier for others..
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <a
+                  href="https://github.com/arman4h"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#4F7CFF] hover:text-[#3B66E0] transition-colors duration-150"
+                >
+                  <Code2 className="w-3.5 h-3.5" />
+                  GitHub
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+                <a
+                  href="mailto:arman4h.dev@gmail.com"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#4F7CFF] hover:text-[#3B66E0] transition-colors duration-150"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  Email
+                </a>
+                <a
+                  href="https://armanh.net"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#4F7CFF] hover:text-[#3B66E0] transition-colors duration-150"
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  Portfolio
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -161,7 +233,7 @@ export function About() {
                 been a valuable addition to the Acadex resource archive.
               </p>
               <a
-                href="#"
+                href="https://www.facebook.com/groups/uiuss"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 mt-3 text-sm font-medium text-[#4F7CFF] hover:text-[#3B66E0] transition-colors duration-150"

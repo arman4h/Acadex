@@ -2,35 +2,66 @@ import { useEffect, useState } from "react";
 
 const BOOKMARKS_KEY = "acadexa_bookmarks";
 
+let globalBookmarkedIds: string[] = [];
+const listeners = new Set<(ids: string[]) => void>();
+
+const loadFromStorage = (): string[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(BOOKMARKS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveToStorage = (ids: string[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(ids));
+  } catch {
+    // ignore
+  }
+};
+
 export function useBookmarks() {
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem(BOOKMARKS_KEY);
-      return stored ? (JSON.parse(stored) as string[]) : [];
-    } catch {
-      return [];
+    if (globalBookmarkedIds.length === 0) {
+      globalBookmarkedIds = loadFromStorage();
     }
+    return globalBookmarkedIds;
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarkedIds));
-    } catch {
-      // ignore
-    }
-  }, [bookmarkedIds]);
+    const listener = (ids: string[]) => {
+      setBookmarkedIds(ids);
+    };
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
 
-  const toggleBookmark = (courseId: string) => {
-    setBookmarkedIds((prev) =>
-      prev.includes(courseId)
-        ? prev.filter((id) => id !== courseId)
-        : [...prev, courseId]
-    );
+  const updateBookmarks = (ids: string[]) => {
+    globalBookmarkedIds = ids;
+    saveToStorage(ids);
+    listeners.forEach((listener) => listener(ids));
   };
 
-  const isBookmarked = (courseId: string) => bookmarkedIds.includes(courseId);
+  const toggleBookmark = (courseId: string) => {
+    const newIds = globalBookmarkedIds.includes(courseId)
+      ? globalBookmarkedIds.filter((id) => id !== courseId)
+      : [...globalBookmarkedIds, courseId];
+    updateBookmarks(newIds);
+  };
 
-  const clearBookmarks = () => setBookmarkedIds([]);
+  const isBookmarked = (courseId: string) => globalBookmarkedIds.includes(courseId);
+
+  const clearBookmarks = () => {
+    updateBookmarks([]);
+  };
 
   return {
     bookmarkedIds,

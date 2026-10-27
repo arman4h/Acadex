@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, Lightbulb, GraduationCap, Users } from "lucide-react";
+import { ArrowLeft, BookOpen, Lightbulb, GraduationCap, Users, Bookmark, BookmarkCheck } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,7 @@ import { SEO } from "../components/SEO";
 import { useCourse } from "../hooks/useCourses";
 import { useResourcesByCourse, useContributorsByCourse } from "../hooks/useResources";
 import { getResourceTypeLabel } from "../utils/resourceHelpers";
+import { useBookmarks } from "../hooks/useBookmarks";
 import type { ResourceType, Resource } from "../types";
 
 const resourceTabs = [
@@ -31,6 +32,7 @@ export function CoursePage() {
   const { data: resources, isLoading: resourcesLoading, error, refetch } = useResourcesByCourse(id!);
   const { data: contributors } = useContributorsByCourse(id!);
   const [activeTab, setActiveTab] = useState("all");
+  const { isBookmarked, toggleBookmark } = useBookmarks();
 
   if (courseLoading) {
     return (
@@ -48,9 +50,10 @@ export function CoursePage() {
     );
   }
 
-  const filteredResources = activeTab === "all"
-    ? (resources ?? [])
-    : (resources ?? []).filter((r: Resource) => r.type === activeTab);
+  const filteredResources =
+    activeTab === "all"
+      ? (resources ?? [])
+      : (resources ?? []).filter((r: Resource) => r.type === activeTab);
 
   const typeCounts = (resources ?? []).reduce<Record<string, number>>((acc, r: Resource) => {
     acc[r.type] = (acc[r.type] ?? 0) + 1;
@@ -77,34 +80,52 @@ export function CoursePage() {
         {/* Left Sidebar */}
         <aside className="order-2 lg:order-none space-y-6">
           <div className="lg:hidden rounded-2xl border border-[#EAECEF] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 mb-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-[#4F7CFF]/10 p-2.5 w-fit">
-                    <BookOpen className="w-5 h-5 text-[#4F7CFF]" />
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-[#4F7CFF]/10 p-2.5 w-fit">
+                      <BookOpen className="w-5 h-5 text-[#4F7CFF]" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-[#1F2937] dark:text-slate-100">
+                        {course.course_name}
+                      </h1>
+                      <p className="text-sm text-[#4F7CFF] font-medium mt-1">
+                        {course.course_code}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-[#1F2937] dark:text-slate-100">
-                      {course.course_name}
-                    </h1>
-                    <p className="text-sm text-[#4F7CFF] font-medium mt-1">
-                      {course.course_code}
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleBookmark(course.id)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-all duration-150 cursor-pointer shrink-0 ${
+                      isBookmarked(course.id)
+                        ? "bg-[#4F7CFF]/10 text-[#4F7CFF]"
+                        : "bg-[#F8F9FA] text-[#6B7280] hover:text-[#1F2937] dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                    }`}
+                  >
+                    {isBookmarked(course.id) ? (
+                      <BookmarkCheck className="w-3.5 h-3.5" />
+                    ) : (
+                      <Bookmark className="w-3.5 h-3.5" />
+                    )}
+                    {isBookmarked(course.id) ? "Bookmarked" : "Bookmark"}
+                  </button>
                 </div>
 
                 {course.description && (
                   <p className="text-[#6B7280] dark:text-slate-400 mt-3">{course.description}</p>
                 )}
 
-                <div className="flex items-center gap-2 mt-4">
-                  <GraduationCap className="w-4 h-4 text-[#6B7280] dark:text-slate-400" />
-                  <span className="text-sm text-[#6B7280] dark:text-slate-400">
-                    {resources?.length ?? 0} resources available
-                  </span>
-                  {course.trimester && (
-                    <Badge className="ml-3">Trimester {course.trimester}</Badge>
-                  )}
+                <div className="flex flex-wrap items-center gap-3 mt-4">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-[#6B7280] dark:text-slate-400" />
+                    <span className="text-sm text-[#6B7280] dark:text-slate-400">
+                      {resources?.length ?? 0} resources available
+                    </span>
+                  </div>
+                  {course.trimester && <Badge>Trimester {course.trimester}</Badge>}
                 </div>
               </div>
             </div>
@@ -137,8 +158,7 @@ export function CoursePage() {
                         : "text-[#6B7280] dark:text-slate-400 hover:text-[#1F2937] dark:hover:text-slate-200 hover:bg-[#EAECEF]/50 dark:hover:bg-slate-800"
                     }`}
                   >
-                    {getResourceTypeLabel(tab.id as ResourceType)} (
-                    {typeCounts[tab.id]})
+                    {getResourceTypeLabel(tab.id as ResourceType)} ({typeCounts[tab.id]})
                   </button>
                 );
               })}
@@ -149,50 +169,62 @@ export function CoursePage() {
         {/* Main Content */}
         <div className="order-2 lg:order-none">
           <div className="hidden lg:block rounded-2xl border border-[#EAECEF] dark:border-slate-800 bg-white dark:bg-slate-900 p-6 mb-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-[#4F7CFF]/10 p-2.5 w-fit">
-                    <BookOpen className="w-5 h-5 text-[#4F7CFF]" />
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-xl bg-[#4F7CFF]/10 p-2.5 w-fit">
+                      <BookOpen className="w-5 h-5 text-[#4F7CFF]" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-bold text-[#1F2937] dark:text-slate-100">
+                        {course.course_name}
+                      </h1>
+                      <p className="text-sm text-[#4F7CFF] font-medium mt-1">
+                        {course.course_code}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-[#1F2937] dark:text-slate-100">
-                      {course.course_name}
-                    </h1>
-                    <p className="text-sm text-[#4F7CFF] font-medium mt-1">
-                      {course.course_code}
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleBookmark(course.id)}
+                    className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-sm font-medium transition-all duration-150 cursor-pointer shrink-0 ${
+                      isBookmarked(course.id)
+                        ? "bg-[#4F7CFF]/10 text-[#4F7CFF]"
+                        : "bg-[#F8F9FA] text-[#6B7280] hover:text-[#1F2937] dark:bg-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+                    }`}
+                  >
+                    {isBookmarked(course.id) ? (
+                      <BookmarkCheck className="w-4 h-4" />
+                    ) : (
+                      <Bookmark className="w-4 h-4" />
+                    )}
+                    {isBookmarked(course.id) ? "Bookmarked" : "Bookmark"}
+                  </button>
                 </div>
 
                 {course.description && (
                   <p className="text-[#6B7280] dark:text-slate-400 mt-3">{course.description}</p>
                 )}
 
-                <div className="flex items-center gap-2 mt-4">
-                  <GraduationCap className="w-4 h-4 text-[#6B7280] dark:text-slate-400" />
-                  <span className="text-sm text-[#6B7280] dark:text-slate-400">
-                    {resources?.length ?? 0} resources available
-                  </span>
-                  {course.trimester && (
-                    <Badge className="ml-3">Trimester {course.trimester}</Badge>
-                  )}
+                <div className="flex flex-wrap items-center gap-3 mt-4">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-[#6B7280] dark:text-slate-400" />
+                    <span className="text-sm text-[#6B7280] dark:text-slate-400">
+                      {resources?.length ?? 0} resources available
+                    </span>
+                  </div>
+                  {course.trimester && <Badge>Trimester {course.trimester}</Badge>}
                 </div>
               </div>
             </div>
           </div>
 
-          <Tabs
-            tabs={resourceTabs}
-            activeTab={activeTab}
-            onChange={setActiveTab}
-          />
+          <Tabs tabs={resourceTabs} activeTab={activeTab} onChange={setActiveTab} />
 
           <div className="mt-6 space-y-4">
             {resourcesLoading && <SkeletonLoader count={3} height="h-24" />}
-            {error && (
-              <ErrorState message={error.message} onRetry={() => refetch()} />
-            )}
+            {error && <ErrorState message={error.message} onRetry={() => refetch()} />}
             {!resourcesLoading && !error && filteredResources.length === 0 && (
               <EmptyState
                 title="No resources found"
@@ -228,9 +260,7 @@ export function CoursePage() {
               </li>
               <li className="flex gap-2">
                 <span className="text-[#4F7CFF]">•</span>
-                <span>
-                  Authors and contributors are credited on each resource.
-                </span>
+                <span>Authors and contributors are credited on each resource.</span>
               </li>
             </ul>
           </div>
