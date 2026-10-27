@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Bookmark, X as XIcon } from "lucide-react";
+import { Menu, X, Bookmark, X as XIcon } from "lucide-react";
 import { useState } from "react";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { useBookmarks } from "../../hooks/useBookmarks";
