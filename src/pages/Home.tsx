@@ -10,25 +10,43 @@ import { Button } from "../components/ui/Button";
 import { SEO } from "../components/SEO";
 import { useTrimesters } from "../hooks/useTrimesters";
 import { useAllResources } from "../hooks/useResources";
+import { useAllCourses } from "../hooks/useCourses";
 import { resourceTypes, getResourceIcon } from "../utils/resourceHelpers";
 import { useDebounce } from "../hooks/useDebounce";
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const totalTrimesters = 12;
 
 export function Home() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const debouncedSearch = useDebounce(searchQuery, 200);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const { data: trimesters, isLoading: trimestersLoading } = useTrimesters();
   const { data: allResources } = useAllResources();
+  const { data: allCourses } = useAllCourses();
 
   useEffect(() => {
-    if (debouncedSearch.trim()) {
-      navigate(`/search?q=${encodeURIComponent(debouncedSearch.trim())}`);
-    }
-  }, [debouncedSearch, navigate]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const suggestions = debouncedSearch.trim()
+    ? (allCourses ?? [])
+        .filter(
+          (c) =>
+            c.course_name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+            c.course_code.toLowerCase().includes(debouncedSearch.toLowerCase())
+        )
+        .slice(0, 6)
+    : [];
 
   const totalCourses = trimesters?.reduce(
     (sum, t) => sum + (t.course_count ?? 0), 0
@@ -82,15 +100,46 @@ export function Home() {
           University.
         </p>
 
-        <div className="hero-search" role="search">
+        <div className="hero-search relative" role="search" ref={searchRef}>
           <Search className="w-4.5 h-4.5" />
           <input
             type="text"
             placeholder="Search course code, name or faculty…"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setShowSuggestions(true);
+            }}
+            onFocus={() => setShowSuggestions(true)}
             aria-label="Search courses"
+            autoComplete="off"
           />
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl border border-[#EAECEF] bg-white shadow-xl overflow-hidden dark:border-slate-800 dark:bg-slate-900 z-[9999]">
+              <ul>
+                {suggestions.map((course) => (
+                  <li key={course.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate(`/course/${course.id}`);
+                        setSearchQuery("");
+                        setShowSuggestions(false);
+                      }}
+                      className="w-full text-left flex flex-col gap-0.5 px-4 py-2.5 hover:bg-[#F8F9FA] transition-colors duration-150 dark:hover:bg-slate-800"
+                    >
+                      <p className="text-sm font-medium text-[#1F2937] dark:text-slate-100 break-words">
+                        {course.course_name}
+                      </p>
+                      <p className="text-xs text-[#4F7CFF] font-medium">
+                        {course.course_code}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="hero-stats">
